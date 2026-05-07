@@ -291,6 +291,11 @@ export function CameraView({ onComplete }: CameraViewProps) {
         </p>
       )}
 
+      {/* Credit */}
+      <p className="absolute bottom-4 right-4 text-xs italic text-foreground/30" style={{ fontFamily: "Georgia, serif" }}>
+        developed by kelly tan
+      </p>
+
       <canvas ref={canvasRef} className="hidden" />
       <canvas ref={recordCanvasRef} className="hidden" />
     </div>
