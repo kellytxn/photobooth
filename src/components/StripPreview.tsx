@@ -24,6 +24,53 @@ function getFilterCSS(filter: FilterType): string {
   return filters.find(f => f.id === filter)?.css ?? "none";
 }
 
+function applyFilterToCanvas(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, filter: FilterType) {
+  if (filter === "none") return;
+  const imageData = ctx.getImageData(x, y, w, h);
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+
+    switch (filter) {
+      case "grayscale": {
+        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        data[i] = data[i + 1] = data[i + 2] = gray;
+        break;
+      }
+      case "sepia": {
+        data[i] = Math.min(255, r * 0.393 + g * 0.769 + b * 0.189);
+        data[i + 1] = Math.min(255, r * 0.349 + g * 0.686 + b * 0.168);
+        data[i + 2] = Math.min(255, r * 0.272 + g * 0.534 + b * 0.131);
+        break;
+      }
+      case "warm": {
+        data[i] = Math.min(255, r * 1.2);
+        data[i + 1] = Math.min(255, g * 1.05);
+        data[i + 2] = Math.min(255, b * 0.8);
+        break;
+      }
+      case "cool": {
+        data[i] = Math.min(255, r * 0.85);
+        data[i + 1] = Math.min(255, g * 1.0);
+        data[i + 2] = Math.min(255, b * 1.2);
+        break;
+      }
+      case "vintage": {
+        const vr = r * 0.393 + g * 0.769 + b * 0.189;
+        const vg = r * 0.349 + g * 0.686 + b * 0.168;
+        const vb = r * 0.272 + g * 0.534 + b * 0.131;
+        data[i] = Math.min(255, (r * 0.7 + vr * 0.3) * 1.1);
+        data[i + 1] = Math.min(255, (g * 0.7 + vg * 0.3) * 1.05);
+        data[i + 2] = Math.min(255, (b * 0.7 + vb * 0.3) * 0.95);
+        break;
+      }
+    }
+  }
+
+  ctx.putImageData(imageData, x, y);
+}
+
 const stripColors = [
   { id: "white", label: "White", hex: "#ffffff" },
   { id: "black", label: "Black", hex: "#1a1a1a" },
@@ -62,10 +109,8 @@ export function StripPreview({ photos, clips, filter, setFilter, onRetake }: Str
       const img = await loadImage(photos[i]);
       const y = padding + i * (photoHeight + gap);
 
-      ctx.save();
-      ctx.filter = getFilterCSS(filter);
       ctx.drawImage(img, padding, y, photoWidth, photoHeight);
-      ctx.restore();
+      applyFilterToCanvas(ctx, padding, y, photoWidth, photoHeight, filter);
     }
 
     const isDark = stripColor === "#1a1a1a";
@@ -143,7 +188,6 @@ export function StripPreview({ photos, clips, filter, setFilter, onRetake }: Str
 
     // Draw loop
     const isDark = stripColor === "#1a1a1a";
-    const filterCss = getFilterCSS(filter);
 
     function drawFrame() {
       ctx.fillStyle = stripColor;
@@ -151,10 +195,8 @@ export function StripPreview({ photos, clips, filter, setFilter, onRetake }: Str
 
       for (let i = 0; i < videos.length; i++) {
         const y = padding + i * (photoHeight + gap);
-        ctx.save();
-        if (filterCss !== "none") ctx.filter = filterCss;
         ctx.drawImage(videos[i], padding, y, photoWidth, photoHeight);
-        ctx.restore();
+        applyFilterToCanvas(ctx, padding, y, photoWidth, photoHeight, filter);
       }
 
       const photosBottom = padding + photoHeight * 4 + gap * 3;
@@ -209,13 +251,13 @@ export function StripPreview({ photos, clips, filter, setFilter, onRetake }: Str
 
       <div className="flex flex-col lg:flex-row gap-6 items-center lg:items-start animate-slide-up w-full max-w-5xl mx-auto px-4 py-6 min-h-full">
         {/* Strip preview */}
-        <div className="flex-1 flex flex-col items-center w-full">
-          <div className="shadow-xl">
+        <div className="shrink-0 flex flex-col items-center w-full">
+          <div className="shadow-xl inline-block">
             {stripDataUrl ? (
               <img
                 src={stripDataUrl}
                 alt="Photo strip"
-                className="max-h-[60vh] lg:max-h-[75vh] w-auto max-w-full"
+                className="h-auto w-auto max-h-[55vh] lg:max-h-[75vh] max-w-[90vw] lg:max-w-full object-contain"
               />
             ) : (
               <div className="w-[200px] h-[400px] flex items-center justify-center">
