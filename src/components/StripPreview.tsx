@@ -202,23 +202,23 @@ export function StripPreview({ photos, clips, filter, setFilter, onRetake }: Str
   }, [clips, stripColor, filter, totalWidth, totalHeight, photoWidth, photoHeight, gap, padding]);
 
   return (
-    <div className="fixed inset-0 bg-gradient-hero flex items-center justify-center p-4 overflow-auto">
+    <div className="fixed inset-0 bg-gradient-hero overflow-y-auto">
       {/* Decorative blobs */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-accent-light/10 rounded-full blur-3xl" />
 
-      <div className="flex flex-col lg:flex-row gap-6 items-center lg:items-start animate-slide-up w-full max-w-5xl mx-auto py-8">
+      <div className="flex flex-col lg:flex-row gap-6 items-center lg:items-start animate-slide-up w-full max-w-5xl mx-auto px-4 py-6 min-h-full">
         {/* Strip preview */}
-        <div className="flex-1 flex flex-col items-center">
+        <div className="flex-1 flex flex-col items-center w-full">
           <div className="shadow-xl">
             {stripDataUrl ? (
               <img
                 src={stripDataUrl}
                 alt="Photo strip"
-                className="max-h-[75vh] w-auto"
+                className="max-h-[60vh] lg:max-h-[75vh] w-auto max-w-full"
               />
             ) : (
-              <div className="w-[300px] h-[600px] flex items-center justify-center">
+              <div className="w-[200px] h-[400px] flex items-center justify-center">
                 <div className="text-center space-y-3">
                   <div className="w-8 h-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin mx-auto" />
                   <p className="text-foreground/50 text-sm italic" style={{ fontFamily: "Georgia, serif" }}>generating strip...</p>
@@ -230,7 +230,7 @@ export function StripPreview({ photos, clips, filter, setFilter, onRetake }: Str
         </div>
 
         {/* Controls */}
-        <div className="w-full lg:w-80 flex flex-col gap-5">
+        <div className="w-full lg:w-80 flex flex-col gap-5 pb-8">
           <div style={{ fontFamily: "Georgia, serif" }}>
             <h2 className="text-2xl italic">your photo strip</h2>
             <p className="text-sm italic text-foreground/50 mt-1">customise and download</p>
