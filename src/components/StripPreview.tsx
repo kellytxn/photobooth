@@ -109,7 +109,19 @@ export function StripPreview({ photos, clips, filter, setFilter, onRetake }: Str
       const img = await loadImage(photos[i]);
       const y = padding + i * (photoHeight + gap);
 
-      ctx.drawImage(img, padding, y, photoWidth, photoHeight);
+      // "cover" crop: maintain aspect ratio, center-crop to fit
+      const targetRatio = photoWidth / photoHeight;
+      const srcRatio = img.width / img.height;
+      let sx = 0, sy = 0, sw = img.width, sh = img.height;
+      if (srcRatio > targetRatio) {
+        sw = img.height * targetRatio;
+        sx = (img.width - sw) / 2;
+      } else {
+        sh = img.width / targetRatio;
+        sy = (img.height - sh) / 2;
+      }
+
+      ctx.drawImage(img, sx, sy, sw, sh, padding, y, photoWidth, photoHeight);
       applyFilterToCanvas(ctx, padding, y, photoWidth, photoHeight, filter);
     }
 
